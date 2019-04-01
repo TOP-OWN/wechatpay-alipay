@@ -107,7 +107,6 @@ class Alipay extends BaseAlipay
     public function placeWap($param)
     {
         $this->check($param);
-        isset($param['quit_url']) || json_error('缺少参数：quit_url');
         isset($param['product_code']) || json_error('缺少参数：product_code');
 
         //请求参数
@@ -116,7 +115,6 @@ class Alipay extends BaseAlipay
             'total_amount' => $param['order_price'], //订单总金额，整形，此处单位为元，精确到小数点后2位，不能超过1亿元
             'subject' => $param['subject'], //订单标题，粗略描述用户的支付目的
             'timeout_express' => $this->timeoutExpress, //交易创建后才生效
-            'quit_url' => $param['quit_url'], //用户付款中途退出返回商户网站的地址
             'product_code' => $param['product_code'], //销售产品码，商家和支付宝签约的产品码，如：QUICK_WAP_WAY
         ];
 
