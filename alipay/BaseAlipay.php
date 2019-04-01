@@ -60,9 +60,12 @@ class BaseAlipay
         $this->notifyUrl && $commonConfig['notify_url'] = $this->notifyUrl;
         $commonConfig['sign'] = $this->generateSign($commonConfig, $commonConfig['sign_type']);
 
-        //APP支付返回参数给移动端
         if ($method == 'alipay.trade.app.pay') {
+            //APP支付返回参数给移动端
             return http_build_query($commonConfig);
+        } elseif ($method == 'alipay.trade.page.pay') {
+            //电脑网站支付
+            return $commonConfig;
         }
 
         $result = $this->curlPost(self::GATEWAY_URL, $commonConfig);

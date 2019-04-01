@@ -56,6 +56,46 @@ $info = $alipay->placeWap($payData);
 isset($info['errno']) && $info['errno'] != 0 && json_error($info['error']??'手机网站支付配置错误', -2);
 $info['redirect_url']  手机网站调起支付宝链接
 ```
+#### 4.电脑网站支付
+* 服务端代码：
+```
+$payData = [
+    'order_no' => '', //商户订单号
+    'order_price' => '', //订单总金额，单位：元 
+    'subject' => '', //订单标题，粗略描述用户的支付目的
+    'notify_url' => '', //支付成功后回调地址
+];
+
+$alipay = new Alipay($config);
+$info = $alipay->placePage($payData);
+$info['html_form']  将结果通过ajax方式写入html body中即可
+```
+
+* html代码如下：
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>支付宝电脑网站支付</title>
+</head>
+<body id="body">
+<script src="http://code.jquery.com/jquery-2.2.4.min.js" 
+integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+<script>
+    $.ajax({
+        url: "/monitor/test", //接口地址请自行修改
+        type: 'POST',
+        success: function (data) {
+            $("#body").html(data.data.html_form);
+        }
+    });
+</script>
+
+</body>
+</html>
+```
 
 ## 二、支付宝退款
  ```
@@ -162,7 +202,7 @@ $param = [
     'out_refund_no' => '', //商户系统内部的退款单号
     'total_fee' => '', //订单总金额，单位为分，只能为整数
     'refund_fee' => '', //退款总金额，订单总金额，单位为分，只能为整数
-    'refund_desc' => '', //若商户传入，会在下发给用户的退款消息中体现退款原因，注意：若订单退款金额≤1元且属于部分退款，则不会在退款消息中体现退款原因
+    'refund_desc' => '', //退款原因，注意：若订单退款金额≤1元且属于部分退款，则不会在退款消息中体现退款原因
     'notify_url' => '', //支付成功后回调地址
 ];
  
