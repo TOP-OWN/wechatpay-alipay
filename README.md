@@ -1,5 +1,5 @@
 # wechat_pay-alipay
-微信支付、支付宝支付
+支付宝支付 、支付宝退款、微信支付、微信企业付款、微信退款
 
 ## 一、支付宝支付
 * 接口文档：https://docs.open.alipay.com/
@@ -152,12 +152,21 @@ $payData = [
 
 //不同支付方式，需传入参数
 if ($payData['trade_type'] == 'JSAPI') {
+<<<<<<< HEAD
     $payData['openid'] == ''; //公众号支付 用户openid
 }elseif($payData['trade_type'] == 'NATIVE'){
     $payData['expire'] == ''; //当面付 二维码过期时间
 }elseif($payData['trade_type'] == 'MWEB'){
     $payData['wap_url'] == ''; //H5支付 WAP网站URL地址
     $payData['wap_name'] == ''; //H5支付 WAP网站名
+=======
+    $payData['openid'] = ''; //公众号支付 用户openid
+}elseif($payData['trade_type'] == 'NATIVE'){
+    $payData['expire'] = ''; //当面付 二维码过期时间
+}elseif($payData['trade_type'] == 'MWEB'){
+    $payData['wap_url'] = ''; //H5支付 WAP网站URL地址
+    $payData['wap_name'] = ''; //H5支付 WAP网站名
+>>>>>>> 340b95f070521f620aee39ccb5fe0058184a884a
 }
 
 //预下单方法：
