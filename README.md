@@ -80,9 +80,9 @@ $info['html_form']  将结果通过ajax方式写入html body中即可
     <title>支付宝电脑网站支付</title>
 </head>
 <body id="body">
+
 <script src="http://code.jquery.com/jquery-2.2.4.min.js" 
 integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
-
 <script>
     $.ajax({
         url: "/monitor/test", //接口地址请自行修改
@@ -92,7 +92,6 @@ integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="ano
         }
     });
 </script>
-
 </body>
 </html>
 ```
@@ -152,21 +151,12 @@ $payData = [
 
 //不同支付方式，需传入参数
 if ($payData['trade_type'] == 'JSAPI') {
-<<<<<<< HEAD
-    $payData['openid'] == ''; //公众号支付 用户openid
-}elseif($payData['trade_type'] == 'NATIVE'){
-    $payData['expire'] == ''; //当面付 二维码过期时间
-}elseif($payData['trade_type'] == 'MWEB'){
-    $payData['wap_url'] == ''; //H5支付 WAP网站URL地址
-    $payData['wap_name'] == ''; //H5支付 WAP网站名
-=======
     $payData['openid'] = ''; //公众号支付 用户openid
 }elseif($payData['trade_type'] == 'NATIVE'){
     $payData['expire'] = ''; //当面付 二维码过期时间
 }elseif($payData['trade_type'] == 'MWEB'){
     $payData['wap_url'] = ''; //H5支付 WAP网站URL地址
     $payData['wap_name'] = ''; //H5支付 WAP网站名
->>>>>>> 340b95f070521f620aee39ccb5fe0058184a884a
 }
 
 //预下单方法：
