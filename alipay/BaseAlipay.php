@@ -159,9 +159,7 @@ class BaseAlipay
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-        if (!($data = curl_exec($ch))) {
-            $data = ['errno' => curl_errno($ch), 'error' => curl_error($ch)] + curl_getinfo($ch);
-        }
+        if (!($data = curl_exec($ch))) $data = ['errno' => curl_errno($ch), 'error' => curl_error($ch)] + curl_getinfo($ch);
         curl_close($ch);
 
         return $data;
