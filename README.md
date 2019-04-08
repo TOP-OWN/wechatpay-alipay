@@ -333,7 +333,7 @@ private function alipay($callback, $successLog, $errorLog)
       'key' => 'xxxxx',
 
       //公众号支付 开贝影擎（kaibei_weixin）
-      'jsapi_appid' => 'xxxxx', //jsapi_appid与appid一致
+      'jsapi_appid' => 'xxxxx', //jsapi_appid与appid 实际一致，分开写好做区分
       'jsapi_secret' => 'xxxxx',
   ];
   
