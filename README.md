@@ -379,8 +379,7 @@ private function alipay($callback, $successLog, $errorLog)
      }
 
      //微信分享
-     $wechatPay = new WechatJsapi(config('pay.wechat'));
-     $shareData = $wechatPay->getShareData();
+     $shareData = $jsapi->getShareData();
      $shareData['openid'] = $openid;
 
      return $this->fetch('wap/book_share', $shareData);
