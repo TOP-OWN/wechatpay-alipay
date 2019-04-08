@@ -9,8 +9,8 @@
 * [七、微信公众号开发](#7)
  
 ## <a id="#1">一、支付宝支付</a>
-* 接口文档：<a href="https://docs.open.alipay.com/" target="_blank">https://docs.open.alipay.com/</a>
-* 公共错误码：<a href="https://docs.open.alipay.com/common/105806" target="_blank">https://docs.open.alipay.com/common/105806</a>
+* 接口文档：https://docs.open.alipay.com/
+* 公共错误码：https://docs.open.alipay.com/common/105806
  ```
  $config = [
      'app_id' => '',
@@ -135,8 +135,8 @@ $info['code'] != 10000 && json_error((($info['sub_msg'] ?? '') . ' ' . $info['su
 ```
 
 ## <a name="3">三、微信支付</a>
-* 微信支付文档：<a href="https://pay.weixin.qq.com/wiki/doc/api/index.html" target="_blank">https://pay.weixin.qq.com/wiki/doc/api/index.html</a>
-* 企业付款文档：<a href="https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2" target="_blank">https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2</a>
+* 微信支付文档：https://pay.weixin.qq.com/wiki/doc/api/index.html
+* 企业付款文档：https://pay.weixin.qq.com/wiki/doc/api/tools/mch_pay.php?chapter=14_2
 ```
 $config = [
     'appid' => '',
