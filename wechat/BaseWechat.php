@@ -120,11 +120,11 @@ class BaseWechat
 
         curl_setopt($ch, CURLOPT_TIMEOUT, $second);
         curl_setopt($ch, CURLOPT_URL, self::API_URL_PREFIX . $url);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2); //生产环境设置为2
 
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);  //设置header
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); //要求结果为字符串且输出到屏幕上
+        curl_setopt($ch, CURLOPT_HEADER, false);  //设置header
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); //要求结果为字符串且输出到屏幕上
 
         if ($useCert) {
             //使用证书：cert 与 key 分别属于两个.pem文件
@@ -135,12 +135,39 @@ class BaseWechat
         }
 
         //post提交方式
-        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
 
-        if (!($output = curl_exec($ch))) $output = ['errno' => curl_errno($ch), 'error' => curl_error($ch)] + curl_getinfo($ch);
+        if (!($data = curl_exec($ch))) $data = ['errno' => curl_errno($ch), 'error' => curl_error($ch)] + curl_getinfo($ch);
         curl_close($ch);
 
-        return $output;
+        return $data;
+    }
+
+    //get方式提交
+    protected function getCurl($url)
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60); //设置cURL允许执行的最长秒数
+        curl_setopt($ch, CURLOPT_HEADER, false);  //是否抓取头文件的信息，默认值为false，表示不显示响应头
+
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        if (!($data = curl_exec($ch))) $data = ['errno' => curl_errno($ch), 'error' => curl_error($ch)] + curl_getinfo($ch);
+
+        //转码
+        $fromEncoding = 'auto'; //未知原编码，通过auto自动检测后，转换编码为utf-8
+        if (is_array($data)) {
+            $data = json_decode(mb_convert_encoding(json_encode($data), 'UTF-8', $fromEncoding), true);
+        } else {
+            $data = json_decode(mb_convert_encoding($data, 'UTF-8', $fromEncoding), true);
+        }
+        curl_close($ch);
+
+        return $data;
     }
 }

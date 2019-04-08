@@ -27,8 +27,7 @@ namespace app\common\extend\alipay;
  * 3.手机网站支付
  *          $alipay = new Alipay($config);
  *          $info = $alipay->placeWap($payData);
- *          isset($info['errno']) && $info['errno'] != 0 && json_error($info['error']??'手机网站支付配置错误', -2);
- *          $info['redirect_url']  手机网站调起支付宝链接
+ *          $info['html_form']  将结果通过ajax方式写入html body中即可
  * 4.电脑网站支付
  *          $alipay = new Alipay($config);
  *          $info = $alipay->placePage($payData);
@@ -65,6 +64,7 @@ class Alipay extends BaseAlipay
         isset($param['notify_url']) || json_error('缺少参数：notify_url');
 
         $this->notifyUrl = $param['notify_url'];
+        isset($param['return_url']) && $this->returnUrl = $param['return_url'];;
     }
 
     //下订单 当面付
@@ -107,7 +107,6 @@ class Alipay extends BaseAlipay
     public function placeWap($param)
     {
         $this->check($param);
-        isset($param['product_code']) || json_error('缺少参数：product_code');
 
         //请求参数
         $requestConfig = [
@@ -115,18 +114,17 @@ class Alipay extends BaseAlipay
             'total_amount' => $param['order_price'], //订单总金额，整形，此处单位为元，精确到小数点后2位，不能超过1亿元
             'subject' => $param['subject'], //订单标题，粗略描述用户的支付目的
             'timeout_express' => $this->timeoutExpress, //交易创建后才生效
-            'product_code' => $param['product_code'], //销售产品码，商家和支付宝签约的产品码，如：QUICK_WAP_WAY
+            'product_code' => 'QUICK_WAP_WAY', //销售产品码，商家和支付宝签约的产品码，如：QUICK_WAP_WAY
         ];
 
         $result = $this->commonRequest($requestConfig, self::WAP_PAY_URL);
-        return $result;
+        return $this->buildRequestForm($result);
     }
 
     //下订单 电脑网站支付
     public function placePage($param)
     {
         $this->check($param);
-//        isset($param['product_code']) || json_error('缺少参数：product_code');
 
         //请求参数
         $requestConfig = [
@@ -144,11 +142,12 @@ class Alipay extends BaseAlipay
     /**
      * 建立请求，以表单HTML形式构造（默认）
      * @param array $param 请求参数数组
-     * @return 提交表单HTML文本
+     * @return array 提交表单HTML文本
      */
     private function buildRequestForm($param)
     {
-        $html = "正在跳转至支付页面...<form id='alipaysubmit' name='alipaysubmit' action='https://openapi.alipay.com/gateway.do?charset=" . $this->charset . "' method='POST'>";
+        $html = "<form id='alipaysubmit' name='alipaysubmit' action='" . self::GATEWAY_URL
+            . "?charset=" . $this->charset . "' method='POST'>";
         foreach ($param as $key => $val) {
             if (false === $this->checkEmpty($val)) {
                 $val = str_replace("'", "&apos;", $val);

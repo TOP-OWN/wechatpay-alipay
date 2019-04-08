@@ -32,6 +32,8 @@ class BaseAlipay
 
     protected $notifyUrl;
 
+    protected $returnUrl;
+
     protected function __construct($config)
     {
         isset($config['app_id']) || json_error('缺少参数：app_id');
@@ -58,13 +60,17 @@ class BaseAlipay
             'timestamp' => date('Y-m-d H:i:s')
         ];
         $this->notifyUrl && $commonConfig['notify_url'] = $this->notifyUrl;
+        $this->returnUrl && $commonConfig['return_url'] = $this->returnUrl;
         $commonConfig['sign'] = $this->generateSign($commonConfig, $commonConfig['sign_type']);
 
         if ($method == 'alipay.trade.app.pay') {
-            //APP支付返回参数给移动端
+            //APP支付 返回参数给移动端
             return http_build_query($commonConfig);
+        } elseif ($method == 'alipay.trade.wap.pay') {
+            //手机网站支付 返回参数
+            return $commonConfig;
         } elseif ($method == 'alipay.trade.page.pay') {
-            //电脑网站支付
+            //电脑网站支付 返回参数
             return $commonConfig;
         }
 

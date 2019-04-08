@@ -52,8 +52,7 @@ $payData = [
 
 $alipay = new Alipay($config);
 $info = $alipay->placeWap($payData);
-isset($info['errno']) && $info['errno'] != 0 && json_error($info['error']??'手机网站支付配置错误', -2);
-$info['redirect_url']  手机网站调起支付宝链接
+$info['html_form']  将结果通过ajax方式写入html body中即可
 ```
 #### 4.电脑网站支付
 * 服务端代码：
@@ -254,3 +253,136 @@ $info['return_code'] == 'FAIL' && json_error($info['return_msg'], -2);
 $info['result_code'] == 'FAIL' && json_error($info['err_code_des'], -2);
  ```
  
+## 六、支付回调通知
+``` 
+//微信支付
+public function orderWechat()
+{
+    $this->wechat('order', LogFile::$OrderPaySuccess, LogFile::$OrderPayError);
+}
+
+//支付宝支付
+public function orderAlipay()
+{
+    $this->alipay('order', LogFile::$OrderPaySuccess, LogFile::$OrderPayError);
+}
+
+//微信支付
+private function wechat($callback, $successLog, $errorLog)
+{
+    $wechatPay = new WechatPay($this->wechatConfig);
+    $verify = $wechatPay->getNotifyData();
+
+    list($userId, $orderNo) = explode(Order::$mark, $verify['out_trade_no']);
+    $msg = 'user_id:' . $userId . '  order_no:' . $orderNo . '  ' . mb_convert_encoding(json_encode(gbk2utf8($verify)), 'UTF-8', 'auto');
+
+    if ($verify['return_code'] == 'SUCCESS' && $verify['result_code'] == 'SUCCESS') {
+        $bool = (new NotifyService())->$callback($verify, Order::$wechatPay);
+        if ($bool === true) {
+            //支付成功后关闭支付宝订单（必须使用支付宝钱包扫码唤起收银台后才能创建订单，因此直接关闭订单时，显示错误 ACQ.TRADE_NOT_EXIST）
+            (new Alipay($this->alipayConfig))->closeOrder($verify['out_trade_no']);
+
+            Log::write($msg, $successLog, Log::API_LOG);
+        } else {
+            Log::write($msg, $errorLog, Log::ERROR_LOG);
+        }
+
+        $wechatPay->replyNotify(); //操做成功，通知微信停止异步通知
+    } else {
+        Log::write($msg, $errorLog, Log::ERROR_LOG);
+    }
+}
+
+//支付宝支付
+private function alipay($callback, $successLog, $errorLog)
+{
+    $alipay = new Alipay($this->alipayConfig);
+    $check = $alipay->rsaCheck($verify = $_POST);
+
+    list($userId, $orderNo) = explode(Order::$mark, $verify['out_trade_no']);
+    $msg = 'user_id:' . $userId . '  order_no:' . $orderNo . '  ' . mb_convert_encoding(json_encode(gbk2utf8($verify)), 'UTF-8', 'auto');
+
+    if ($check === true) {
+        //TRADE_SUCCESS：支付成功的通知  TRADE_FINISHED：退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
+        if ($verify['trade_status'] == 'TRADE_SUCCESS') {
+            $bool = (new NotifyService())->$callback($verify, Order::$alipay);
+            if ($bool === true) {
+                //支付成功后关闭微信订单（可直接关闭）
+                (new WechatPay($this->wechatConfig))->closeOrder($verify['out_trade_no']);
+
+                Log::write($msg, $successLog, Log::API_LOG);
+            } else {
+                Log::write($msg, $errorLog, Log::ERROR_LOG);
+            }
+        } else {
+            Log::write($msg, $errorLog, Log::ERROR_LOG);
+        }
+
+        $alipay->replyNotify(); //操做成功，通知支付宝停止异步通知
+    } else {
+        Log::write($msg, $errorLog, Log::ERROR_LOG);
+    }
+}
+ ``` 
+ 
+ ## 七、微信公众号开发
+  ``` 
+  $config = [
+      'appid' => 'xxxxx',
+      'mch_id' => 'xxxxx',
+      'key' => 'xxxxx',
+
+      //公众号支付 开贝影擎（kaibei_weixin）
+      'jsapi_appid' => 'xxxxx', //jsapi_appid与appid一致
+      'jsapi_secret' => 'xxxxx',
+  ];
+  
+ //分享链接（移动端）
+ public function wapShare()
+ {
+     if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false) {
+         //电脑扫一扫分享 type=scane
+         $type = isset($_GET['type']) ? ('?type=' . $_GET['type']) : '';
+         $redirectUrl = 'http://buy.kaibei.com/api/wap/openid' . $type;
+
+         $jsapi = new WechatJsapi(config('pay.wechat'));
+         $jsapi->getCode($redirectUrl, WechatJsapi::BASE_SCOPE);
+     } else {
+         return $this->fetch('wap/book_share', ['openid' => '', 'appId' => '', 'nonceStr' => '', 'timeStamp' => '', 'paySign' => '',]);
+     }
+ }
+
+ //获取openid
+ public function openid()
+ {
+     if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') === false) {
+         $this->redirect('/share');
+     }
+
+     $openid = '';
+     $jsapi = new WechatJsapi(config('pay.wechat'));
+
+     $type = isset($_GET['type']) ? ('?type=' . $_GET['type']) : '';
+     $redirectUrl = 'http://buy.kaibei.com/api/wap/openid' . $type;
+     if (isset($_REQUEST['code'])) {
+         $tokenData = $jsapi->getAccessToken($_REQUEST['code']);
+         if (isset($tokenData['errcode'])) {
+             if (isset($tokenData['errcode']) == 40163) { //返回上一页重定向
+                 $jsapi->getCode($redirectUrl, WechatJsapi::BASE_SCOPE);
+             } else {
+                 json_error('errcode:' . $tokenData['errcode'] . ' ' . $tokenData['errmsg']);
+             }
+         }
+         $openid = $tokenData['openid'];
+     } else {
+         $jsapi->getCode($redirectUrl, WechatJsapi::BASE_SCOPE);
+     }
+
+     //微信分享
+     $wechatPay = new WechatJsapi(config('pay.wechat'));
+     $shareData = $wechatPay->getShareData();
+     $shareData['openid'] = $openid;
+
+     return $this->fetch('wap/book_share', $shareData);
+ }
+ ``` 

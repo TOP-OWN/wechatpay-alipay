@@ -80,5 +80,5 @@ function gbk2utf8($data)
         return array_map('gbk2utf8', $data);
     }
 
-    return iconv('gbk', 'utf-8', $data);
+    return iconv('gbk', 'utf-8//IGNORE', $data); //IGNORE 会忽略掉不能转化的字符，而默认效果是从第一个非法字符截断。
 }
